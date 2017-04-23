@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Japan Map - MouseOut Demo</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="../jquery.japan-map.js"></script>
+        <script>
+            $(function(){
+                $("#map-container").japanMap({
+                    onHover : function(data) {
+                        $("#target").val(data.name);
+                    },
+                    mouseOut : function(){
+                        $("#target").val("");
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="map-container"></div>
+        <form>
+            <input type="text" id="target" placeholder="都道府県を選んでください"/>
+        </form>
+    </body>
+</html>
