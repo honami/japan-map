@@ -1,4 +1,4 @@
-/*!
+                        /*!
  * Japan Map Selector (jQuery Plugin) v0.0.1
  *
  * Copyright (c) 2014 Takemaru Hirai
@@ -11,6 +11,11 @@
  *
  * Date: 2014-05-15
  */
+
+ /*
+  * Modified work Copyright 2017-04-23 honami
+  * https://github.com/honami/japan-map
+  */
 
 ;(function($){
     "use strict";
@@ -46,7 +51,8 @@
             fontColor           : null,
             fontShadowColor     : null,
             onSelect            : function(){},
-            onHover             : function(){}
+            onHover             : function(){},
+            mouseOut            : function(){},
         }, options);
 
         var map;
@@ -136,6 +142,7 @@
         this.okinawaCliclableZone = {x:0, y:515, w:180, h:56};
         this.fitSize();
         this.initializeData();
+        this.pointerIsOnIsland = false;
     };
 
     Map.prototype.initializeData = function(){
@@ -143,6 +150,7 @@
     };
 
     Map.prototype.setData = function(prefecture,area){
+
         this.data = {
             code : prefecture? prefecture.code : null,
             name : prefecture? this.getName(prefecture) : null,
@@ -209,7 +217,7 @@
                 }
 
                 _target.on(_move, function(e){
-                    point	= e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
+                    point   = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
 
                     if (self.isHovering()) {
                         self.pointer = {
@@ -224,7 +232,7 @@
                 });
 
                 $(document).on(_end, function(e){
-                    point	= e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
+                    point   = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
 
                     if (self.data.code !== null && self.data.name != null && "onSelect" in self.options){
                         setTimeout(function(){
@@ -253,7 +261,7 @@
             });
 
             _target.on("mousedown", function(e){
-                var point	= e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
+                var point   = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
 
                 if (self.data.code !== null && self.data.name != null && "onSelect" in self.options){
                     setTimeout(function(){
@@ -357,8 +365,9 @@
         var render = this.options.selection == "area" ? this.renderAreaMap : this.renderPrefectureMap;
         render.apply(this);
 
-        if (! this.hovering)
+        if (! this.hovering) 
             this.initializeData();
+
 
         this.element.style.background = this.options.backgroundColor;
 
@@ -605,20 +614,24 @@
 
         if (this.options.borderLineWidth)
             context.lineWidth = this.options.borderLineWidth;
-
+        
         var pointerIsOn = this.pointer && context.isPointInPath( this.pointer.x, this.pointer.y );
+
 
         if (pointerIsOn){
             this.hovering = true;
             this.hovered  = prefecture.code;
+            this.pointerIsOnIsland = true;
 
             if (this.data.code != prefecture.code && this.options.onHover){
+
                 this.setData(prefecture,area);
                 this.options.onHover(this.data);
 
             } else {
                 this.setData(prefecture,area);
             }
+
 
             if (area.hoverColor)
                 context.fillStyle = area.hoverColor;
@@ -628,12 +641,21 @@
                 context.fillStyle = this.brighten(context.fillStyle, 0.2);
         }
 
+        if (this.data.code == null && this.pointerIsOnIsland) {
+            this.options.mouseOut();
+            this.pointerIsOnIsland = false;
+        }
+
+
         this.element.style.cursor = (this.data.code == null)? "default" : "pointer";
     };
 
     MapCanvas.prototype.isHovering = function(){
         return this.hovering;
     };
+
+
+
 
     // ---------------------------------------------------------------------------------------------------------------
     /* data */
